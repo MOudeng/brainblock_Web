@@ -1,0 +1,29 @@
+name: CD Pipeline - Development
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy-to-nuc:
+    # Menggunakan self-hosted runner yang diinstall di NUC Server
+    runs-on: self-hosted
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup environment file
+      run: |
+        # Buat file .env dari repository secrets jika diperlukan
+        # echo "DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}" > .env
+        echo "Deployment started for dev..."
+
+    - name: Deploy with Docker Compose
+      run: |
+        # Asumsi runner dijalankan di folder project di NUC (misal /opt/services/brainblock-dev)
+        # Atau Actions otomatis mengatur direktori kerjanya.
+        docker compose -f docker-compose.yml up -d --build
+        
+    - name: Clean up unused Docker images
+      run: docker image prune -f

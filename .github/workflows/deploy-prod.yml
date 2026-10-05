@@ -1,0 +1,26 @@
+name: CD Pipeline - Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-to-prod:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.PROD_SERVER_IP }}
+        username: ${{ secrets.PROD_SERVER_USER }}
+        key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+        script: |
+          # Ini adalah contoh script yang akan dieksekusi di VPS Production
+          cd /opt/services/brainblock-prod
+          git pull origin main
+          docker compose -f docker-compose.yml up -d --build
+          docker image prune -f

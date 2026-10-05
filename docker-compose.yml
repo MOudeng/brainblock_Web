@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: brainblock-client
+    ports:
+      - "3003:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: brainblock-api
+    ports:
+      - "8089:8080"
+    environment:
+      - DATABASE_URL=postgres://postgres:yourpassword@postgres:5432/brainblock?sslmode=disable
+      - PORT=8080
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: docker.io/library/postgres:15-alpine
+    container_name: brainblock-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: brainblock
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
